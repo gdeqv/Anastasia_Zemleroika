@@ -52,7 +52,7 @@
         margin: 20px 0;
     }
 
-    input[type="text"], input[type="date"] {
+    input[type="text"] {
         padding: 10px;
         font-size: 1em;
         border-radius: 5px;
@@ -71,28 +71,6 @@
         cursor: pointer;
     }
 
-    .result {
-        margin-top: 30px;
-        font-size: 1.5em;
-        color: #00ff00;
-    }
-
-    .warning-text {
-        margin-top: 20px;
-        font-size: 1.2em;
-        color: #ff5555;
-    }
-
-    .locations {
-        margin-top: 30px;
-        font-size: 1em;
-        color: #ff8800;
-        text-align: left;
-        display: inline-block;
-    }
-
-    .locations h2 { color: #ff4400; }
-
     .city-result {
         margin-top: 20px;
         font-size: 1.2em;
@@ -106,6 +84,16 @@
 
     .city-result span.time { color: #00ff00; font-weight: bold; }
     .city-result span.alert { color: #ff4444; font-weight: bold; }
+
+    .locations {
+        margin-top: 30px;
+        font-size: 1em;
+        color: #ff8800;
+        text-align: left;
+        display: inline-block;
+    }
+
+    .locations h2 { color: #ff4400; }
 </style>
 </head>
 <body>
@@ -120,70 +108,49 @@
 <p class="disclaimer">⚠️ Всё шутка! Анастасия Землеройка — вымышленный мемный персонаж. ⚠️</p>
 
 <div class="search-section">
-    <input type="date" id="arrivalDate">
     <input type="text" id="citySearch" placeholder="Введите город или село">
-    <button onclick="calculateTime()">Проверить</button>
+    <button onclick="checkArrival()">Проверить</button>
 </div>
-
-<div class="result" id="countdown"></div>
-<div class="warning-text" id="warning"></div>
 
 <div class="city-result" id="cityResult" style="display:none;"></div>
 
 <div class="locations">
-    <h2>Где замечена Анастасия:</h2>
+    <h2>Где замечена Анастасия (9 ноября 2025, время МСК):</h2>
     <ul id="locations-list">
-        <li data-time="13:00">Test-City 1</li>
-        <li data-time="13:05">Test-Village 1</li>
-        <li data-time="13:15">Test-Village 2</li>
-        <li data-time="13:20">Test-Village 3</li>
-        <li data-time="13:40">Test-City 2</li>
+        <li data-time="13:00">13:00 — Test-City 1</li>
+        <li data-time="13:05">13:05 — Test-Village 1</li>
+        <li data-time="13:15">13:15 — Test-Village 2</li>
+        <li data-time="13:20">13:20 — Test-Village 3</li>
+        <li data-time="13:40">13:40 — Test-City 2</li>
     </ul>
 </div>
 
 <script>
-function calculateTime() {
-    const input = document.getElementById('arrivalDate').value;
+function checkArrival() {
     const searchTerm = document.getElementById('citySearch').value.toLowerCase();
     const cityResultDiv = document.getElementById('cityResult');
-
-    if(!input) {
-        alert('Выберите дату!');
-        return;
-    }
-
-    const arrival = new Date(input + 'T00:00:00+03:00'); // МСК
-    const now = new Date();
-    const diff = arrival - now;
-
-    if(diff < 0) {
-        document.getElementById('countdown').textContent = 'Анастасия уже здесь...';
-        document.getElementById('warning').textContent = '⚠️ Срочно укрывайтесь! ⚠️';
-    } else {
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const weeks = Math.floor(days / 7);
-        const months = Math.floor(days / 30);
-        document.getElementById('countdown').textContent = 
-            `До прихода осталось: ${months} месяцев, ${weeks%4} недель, ${days%7} дней.`;
-        document.getElementById('warning').textContent = '';
-    }
-
     const listItems = document.querySelectorAll('#locations-list li');
+
     const nowMSK = new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Moscow"}));
+    const today = new Date(2025, 10, 9); // 9 ноября 2025, месяцы с 0
+    today.setHours(nowMSK.getHours());
+    today.setMinutes(nowMSK.getMinutes());
+    today.setSeconds(nowMSK.getSeconds());
 
     let found = false;
 
     listItems.forEach(li => {
         li.style.color = '#888';
-        li.textContent = li.textContent.split(' ')[0]; // сброс текста
+        li.textContent = li.textContent.split(' — ')[1]; // сброс предыдущего текста
         const cityName = li.textContent.toLowerCase();
         if(searchTerm && cityName.includes(searchTerm)) {
             found = true;
             const timeParts = li.getAttribute('data-time').split(':');
-            const cityTime = new Date(nowMSK);
+            const cityTime = new Date(today);
             cityTime.setHours(parseInt(timeParts[0]));
             cityTime.setMinutes(parseInt(timeParts[1]));
             cityTime.setSeconds(0);
+
             const delta = (cityTime - nowMSK) / (1000 * 60); // разница в мин
 
             let alertText = '';
@@ -218,4 +185,4 @@ function calculateTime() {
 </script>
 
 </body>
-  </html>
+    </html>
